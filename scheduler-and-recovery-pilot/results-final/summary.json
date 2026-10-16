@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "groups": [
+    {
+      "operation": "backup",
+      "workload_id": "fd15e3fd74083034571513315d26da4ff91de26fa277366a0ab99f0028db844c",
+      "policy": "sequential",
+      "workers": 1,
+      "chunk": 1,
+      "repetitions": 1,
+      "experiment_config": {
+        "damage_ratio": null,
+        "damage_types": null
+      },
+      "successes": 1,
+      "mean_seconds": 0.0626876,
+      "stdev_seconds": 0.0,
+      "throughput_bytes_per_second": 5291907.809518948,
+      "mean_steal_attempts": 0,
+      "mean_steals_succeeded": 0
+    },
+    {
+      "operation": "backup",
+      "workload_id": "fd15e3fd74083034571513315d26da4ff91de26fa277366a0ab99f0028db844c",
+      "policy": "stealing",
+      "workers": 4,
+      "chunk": 2,
+      "repetitions": 1,
+      "experiment_config": {
+        "damage_ratio": null,
+        "damage_types": null
+      },
+      "successes": 1,
+      "mean_seconds": 0.023187,
+      "stdev_seconds": 0.0,
+      "throughput_bytes_per_second": 14307025.488420235,
+      "mean_steal_attempts": 22,
+      "mean_steals_succeeded": 5
+    }
+  ]
+}

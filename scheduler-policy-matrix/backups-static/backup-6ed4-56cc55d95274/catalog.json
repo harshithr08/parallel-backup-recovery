@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "backup_id": "backup-6ed4-56cc55d95274",
+  "source_root": "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\scheduler-and-recovery-pilot\\source",
+  "snapshot_root": "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\scheduler-policy-matrix\\backups-static\\backup-6ed4-56cc55d95274",
+  "files": [
+    {"relative_path": "dir_00000\\file_00000000.docdata", "size_bytes": 5458, "estimated_cost": 5458, "sha256": "f2ed7dbbe3c9010b35c81ac629b6791d47333f57ceebe5c7fb04fd9a19d9498b"},
+    {"relative_path": "dir_00000\\file_00000001.bin", "size_bytes": 61231, "estimated_cost": 61231, "sha256": "055c4f61bc3106d8a934c2a2a50bf6040f27528ffea227e0a1fefa672ac82a08"},
+    {"relative_path": "dir_00000\\file_00000002.imgdata", "size_bytes": 6388, "estimated_cost": 6388, "sha256": "93ed7cbcaca8b7649ed58208efa634ce7d966d2f81dfbeacb9f15830a0c341a7"},
+    {"relative_path": "dir_00000\\file_00000003.viddata", "size_bytes": 4863, "estimated_cost": 4863, "sha256": "5082095e7ba16dbf2bcabd0bec47ebbdb317b597dfcf4c67b08e79f1739f9421"},
+    {"relative_path": "dir_00000\\file_00000004.viddata", "size_bytes": 46845, "estimated_cost": 46845, "sha256": "852a9ebf2554fe7a2246e7d04ba96cd8af8397dc41d1e7fcd246c0c3a803dfcd"},
+    {"relative_path": "dir_00000\\file_00000005.docdata", "size_bytes": 6980, "estimated_cost": 6980, "sha256": "30298f865eab10a58227c251391cceb58ead7bcbead48c1380390bafa49a52d3"},
+    {"relative_path": "dir_00000\\file_00000006.docdata", "size_bytes": 4503, "estimated_cost": 4503, "sha256": "7ab021943a07063a6c665c853a693379ad0eab8f0702be48d1860a4178955a0f"},
+    {"relative_path": "dir_00000\\file_00000007.viddata", "size_bytes": 40328, "estimated_cost": 40328, "sha256": "4717583f892435e54adc8091831007c989e37f5e2652e09d2ec8aa31c2a1de30"},
+    {"relative_path": "dir_00000\\file_00000008.docdata", "size_bytes": 8041, "estimated_cost": 8041, "sha256": "9694a78db56d4ffb5279df1dc8c946271d4bcf89881f495e9c3e6f4b7da381e1"},
+    {"relative_path": "dir_00000\\file_00000009.viddata", "size_bytes": 5318, "estimated_cost": 5318, "sha256": "41a3b12664b1d8688193c997abd8ccc24919106de1b5a209d8493e0b6006d674"},
+    {"relative_path": "dir_00000\\file_00000010.docdata", "size_bytes": 2591, "estimated_cost": 2591, "sha256": "a9f9478bfef3611ea0813ae787a5c5cbb619b714ec8fbe7751113df95246f5d5"},
+    {"relative_path": "dir_00000\\file_00000011.imgdata", "size_bytes": 5102, "estimated_cost": 5102, "sha256": "ad20c92217165c3909ea7c5fd06bfb3e6e1cfde588e19fc43c9284ee7c632a10"},
+    {"relative_path": "dir_00000\\file_00000012.docdata", "size_bytes": 98781, "estimated_cost": 98781, "sha256": "81a6588f2ff976ac80cf440e447794e3ad641997883ddb9e1e6f8b33f3937f85"},
+    {"relative_path": "dir_00000\\file_00000013.arcdata", "size_bytes": 5163, "estimated_cost": 5163, "sha256": "3f3791851084ad43228481dfe31e046df4a19eabde0b988a40e89e80e83cf283"},
+    {"relative_path": "dir_00000\\file_00000014.docdata", "size_bytes": 7220, "estimated_cost": 7220, "sha256": "4fd47802675f5e3cc218423bd3646ce4626f9f4e8ab783813e9db0403bca1f78"},
+    {"relative_path": "dir_00000\\file_00000015.docdata", "size_bytes": 1106, "estimated_cost": 1106, "sha256": "43849e9bda46edc7eadb745315114d2428b8814f1841f2f42424ff3c4b15a716"},
+    {"relative_path": "dir_00000\\file_00000016.imgdata", "size_bytes": 5476, "estimated_cost": 5476, "sha256": "0426420f53729ec0d8beb19e353029d3b903df63bb678bef5fe12fe46cc4c6b0"},
+    {"relative_path": "dir_00000\\file_00000017.imgdata", "size_bytes": 5665, "estimated_cost": 5665, "sha256": "7ebb87d977cf198efe68a10961c69a4209f7df59249f3e472a154dbde823fdcf"},
+    {"relative_path": "dir_00000\\file_00000018.docdata", "size_bytes": 5202, "estimated_cost": 5202, "sha256": "60437582b9ed512f2ea55a64c84e4395f97c05796e28a3775fb7ab36b064c57b"},
+    {"relative_path": "dir_00000\\file_00000019.docdata", "size_bytes": 5476, "estimated_cost": 5476, "sha256": "0426420f53729ec0d8beb19e353029d3b903df63bb678bef5fe12fe46cc4c6b0"}
+  ]
+}

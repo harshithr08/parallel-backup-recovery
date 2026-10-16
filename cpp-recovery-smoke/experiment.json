@@ -1,0 +1,20 @@
+﻿{
+    "schema_version":  1,
+    "engine":  "build/ipbrs-backup.exe",
+    "runs":  [
+                 {
+                     "source":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\cpp-recovery-smoke\\source",
+                     "id":  "cpp-recover-selective",
+                     "engine_kind":  "cpp",
+                     "recovery_mode":  "selective",
+                     "workers":  1,
+                     "damage_ratio":  0.05,
+                     "policy":  "sequential",
+                     "damage_types":  "missing",
+                     "backup":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\cpp-recovery-smoke\\backups",
+                     "chunk":  1,
+                     "catalog":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\cpp-recovery-smoke\\backups\\backup-5b5c-56d2cd0a42a8\\catalog.json",
+                     "operation":  "recover"
+                 }
+             ]
+}

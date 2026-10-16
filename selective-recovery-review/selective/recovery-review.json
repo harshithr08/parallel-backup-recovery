@@ -1,0 +1,22 @@
+﻿{
+    "schema_version":  1,
+    "engine":  "build/ipbrs-backup.exe",
+    "runs":  [
+                 {
+                     "id":  "review-python-recover-r1",
+                     "chunk":  1,
+                     "damage_ratio":  0.2,
+                     "reference_script":  "src/ipbrs_reference.py",
+                     "policy":  "sequential",
+                     "backup":  "selective-recovery-review/selective/backups",
+                     "workers":  1,
+                     "source":  "selective-recovery-review/selective/source",
+                     "catalog":  "selective-recovery-review/selective/catalog.sqlite",
+                     "damage_types":  "missing,modified,corrupted,truncated",
+                     "recovery_mode":  "selective",
+                     "operation":  "recover",
+                     "engine_kind":  "python_reference",
+                     "verification_backup_id":  "bfb224c7-3eb7-4b17-ae7a-c6f529593a69"
+                 }
+             ]
+}

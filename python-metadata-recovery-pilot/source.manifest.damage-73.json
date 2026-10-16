@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "seed": 73,
+  "requested_ratio": 0.2,
+  "eligible_files": 20,
+  "damaged_files": 4,
+  "status": "COMPLETE",
+  "changes": [
+    {
+      "relative_path": "dir_00000/file_00000008.docdata",
+      "damage_type": "missing",
+      "original_size_bytes": 8041,
+      "original_sha256": "9694a78db56d4ffb5279df1dc8c946271d4bcf89881f495e9c3e6f4b7da381e1"
+    },
+    {
+      "relative_path": "dir_00000/file_00000003.viddata",
+      "damage_type": "modified",
+      "original_size_bytes": 4863,
+      "original_sha256": "5082095e7ba16dbf2bcabd0bec47ebbdb317b597dfcf4c67b08e79f1739f9421"
+    },
+    {
+      "relative_path": "dir_00000/file_00000016.imgdata",
+      "damage_type": "corrupted",
+      "original_size_bytes": 5476,
+      "original_sha256": "0426420f53729ec0d8beb19e353029d3b903df63bb678bef5fe12fe46cc4c6b0"
+    },
+    {
+      "relative_path": "dir_00000/file_00000015.docdata",
+      "damage_type": "truncated",
+      "original_size_bytes": 1106,
+      "original_sha256": "43849e9bda46edc7eadb745315114d2428b8814f1841f2f42424ff3c4b15a716"
+    }
+  ]
+}

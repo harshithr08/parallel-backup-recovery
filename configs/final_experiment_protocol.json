@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "protocol_id": "ipbrs-final-v1",
+  "approval_status": "frozen",
+  "engine": "build/ipbrs-backup.exe",
+  "dataset_sizes": [10000, 50000, 100000, 250000],
+  "heterogeneity_profiles": ["low", "medium", "high"],
+  "workers": [1, 2, 4, 8],
+  "policies": ["sequential", "static", "dynamic", "stealing", "adaptive"],
+  "repetitions": 2,
+  "duplicate_ratio": 0.05,
+  "recovery_damage_ratios": [0.05, 0.2],
+  "damage_types": ["missing", "modified", "corrupted", "truncated"],
+  "dataset_seed_base": 20261004,
+  "execution_order_seed_base": 20261040,
+  "recovery_damage_seed_base": 20261100,
+  "files_per_directory": 1000,
+  "fixed_chunk_sizes": [1, 4, 16, 64],
+  "adaptive_start_chunks": [1, 4, 16, 64],
+  "adaptive_min_chunk": 1,
+  "adaptive_max_chunk": 64,
+  "workload_distribution": {
+    "definition": "Named low/medium/high weighted file-type and inclusive size-range profiles in src/dataset_generator.py",
+    "files_per_directory": 1000,
+    "duplicate_content_ratio": 0.05,
+    "sampling": "Deterministic from dataset_seed_base plus workload index; duplicate files reuse an original file's content and size"
+  },
+  "timing_boundaries": {
+    "primary_metric": "total_elapsed_ns from engine entry through operation return",
+    "backup_includes": ["discovery", "scheduled copy and hashing", "catalog commit"],
+    "recovery_includes": ["catalog load", "classification", "restore", "result aggregation"],
+    "verification": "Independent post-operation verification is excluded from the timed interval",
+    "worker_idle_time": "Estimate based on scheduler elapsed time minus callback busy time; includes coordination gaps",
+    "process_cpu": "Record child-process user/kernel CPU time and utilization relative to subprocess wall time where supported"
+  },
+  "environment_metadata": {
+    "os": "Windows 11 (10.0.26200)",
+    "cpu": "Unknown; record exact processor model and logical core count before final analysis",
+    "compiler": "MSVC / Visual Studio 2019, C++14; exact toolset version unknown",
+    "openmp_runtime": "MSVC OpenMP; exact runtime version not separately identified",
+    "storage_description": "Local C: volume; 998,124,810,240 bytes total and 545,221,451,776 bytes available at audit on 2026-10-09; physical device and filesystem details unknown",
+    "cache_policy": "Uncontrolled",
+    "cache_state": "Uncontrolled",
+    "notes": "Frozen settings retain the existing two-repetition matrix for comparability. CPU model, exact compiler/runtime versions, physical storage details, and cache behavior remain unknown or uncontrolled and must be recorded or reported as limitations before final analysis."
+  },
+  "storage_plan": {
+    "execution_order": "complete all backup workloads while retaining generated sources, then process recovery one workload at a time",
+    "backup_runs": "independently verify each successful backup, then remove its snapshot unless it is the selected sequential repetition-1 recovery reference",
+    "recovery_fixtures": "prepare one isolated fixture, run its recovery measurement, retain the raw result and damage manifest, then remove the fixture before preparing the next; requires fixture-at-a-time runner support",
+    "recovery_reference": "retain only the current workload's independently verified sequential repetition-1 snapshot; remove it after that workload's recovery measurements complete",
+    "capacity_gate": "audit available space before each workload; do not start a workload unless source, retained reference snapshot, and peak fixture fit with operational headroom",
+    "safety_margin_percent": 20,
+    "measured_volume_bytes": 998124810240,
+    "measured_available_bytes": 545286287360,
+    "measurement_date": "2026-10-09",
+    "staged_peak_estimate_method": "Count all generated workload sources plus the largest current-workload sequential reference snapshot and one copied recovery fixture; add the configured safety margin. Remove each reference snapshot after that workload completes. Recheck against actual manifests before recovery."
+  }
+}

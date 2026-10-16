@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "groups": [
+    {
+      "operation": "recover",
+      "workload_id": "source",
+      "policy": "sequential",
+      "workers": 1,
+      "chunk": 1,
+      "repetitions": 1,
+      "experiment_config": {
+        "damage_ratio": 0.2,
+        "damage_types": "missing,modified,corrupted,truncated",
+        "engine_kind": "python_reference",
+        "recovery_mode": "selective"
+      },
+      "successes": 0,
+      "mean_seconds": 0.0859846,
+      "stdev_seconds": 0.0,
+      "throughput_bytes_per_second": 0.0,
+      "mean_steal_attempts": 0,
+      "mean_steals_succeeded": 0
+    }
+  ]
+}

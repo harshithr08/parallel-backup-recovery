@@ -1,0 +1,22 @@
+﻿{
+    "schema_version":  1,
+    "engine":  "build/ipbrs-backup.exe",
+    "runs":  [
+                 {
+                     "id":  "reference-smoke-selective",
+                     "chunk":  1,
+                     "damage_ratio":  0.2,
+                     "reference_script":  "src/ipbrs_reference.py",
+                     "policy":  "sequential",
+                     "backup":  "recovery-policy-metadata-pilot/backups",
+                     "workers":  1,
+                     "source":  "recovery-policy-metadata-pilot/source",
+                     "catalog":  "recovery-policy-metadata-pilot/catalog.sqlite",
+                     "damage_types":  "missing,modified,corrupted,truncated",
+                     "recovery_mode":  "selective",
+                     "operation":  "recover",
+                     "engine_kind":  "python_reference",
+                     "verification_backup_id":  "9e4e33ef-2ee2-4d18-9a3b-5a93f09aa283"
+                 }
+             ]
+}

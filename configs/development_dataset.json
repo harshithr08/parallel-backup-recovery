@@ -1,0 +1,19 @@
+﻿{
+  "schema_version": 1,
+  "seed": 241066,
+  "file_count": 100,
+  "files_per_directory": 25,
+  "duplicate_ratio": 0.05,
+  "file_types": [
+    {"name": "document", "extension": ".docdata", "weight": 4},
+    {"name": "image", "extension": ".imgdata", "weight": 3},
+    {"name": "video", "extension": ".viddata", "weight": 1},
+    {"name": "archive", "extension": ".arcdata", "weight": 1},
+    {"name": "binary", "extension": ".bin", "weight": 1}
+  ],
+  "size_profiles": [
+    {"name": "small", "min_bytes": 1024, "max_bytes": 8192, "weight": 6},
+    {"name": "medium", "min_bytes": 8193, "max_bytes": 65536, "weight": 3},
+    {"name": "large", "min_bytes": 65537, "max_bytes": 262144, "weight": 1}
+  ]
+}

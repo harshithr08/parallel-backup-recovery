@@ -1,0 +1,5 @@
+operation,workload_id,policy,workers,chunk,repetitions,experiment_config,successes,mean_seconds,stdev_seconds,throughput_bytes_per_second,mean_steal_attempts,mean_steals_succeeded
+backup,dev-20-seed-20261002,dynamic,4,2,1,"{'damage_ratio': None, 'damage_types': None}",1,0.0226467,0.0,14648359.363615891,0,0
+backup,dev-20-seed-20261002,sequential,1,2,1,"{'damage_ratio': None, 'damage_types': None}",1,0.0550597,0.0,6025041.90905508,0,0
+backup,dev-20-seed-20261002,static,4,2,1,"{'damage_ratio': None, 'damage_types': None}",1,0.0236639,0.0,14018695.143235054,0,0
+backup,dev-20-seed-20261002,stealing,4,2,1,"{'damage_ratio': None, 'damage_types': None}",1,0.0250576,0.0,13238977.396079434,17,4

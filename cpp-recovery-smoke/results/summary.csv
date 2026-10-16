@@ -1,0 +1,2 @@
+operation,workload_id,policy,workers,chunk,repetitions,experiment_config,successes,mean_seconds,stdev_seconds,throughput_bytes_per_second,mean_steal_attempts,mean_steals_succeeded
+recover,source,sequential,1,1,1,"{'damage_ratio': 0.05, 'damage_types': 'missing', 'engine_kind': 'cpp', 'recovery_mode': 'selective'}",1,0.0033609,0.0,1623969.7700020827,0,0

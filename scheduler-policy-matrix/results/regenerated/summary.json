@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "groups": [
+    {
+      "operation": "backup",
+      "workload_id": "dev-20-seed-20261002",
+      "policy": "dynamic",
+      "workers": 4,
+      "chunk": 2,
+      "repetitions": 1,
+      "experiment_config": {
+        "damage_ratio": null,
+        "damage_types": null
+      },
+      "successes": 1,
+      "mean_seconds": 0.0226467,
+      "stdev_seconds": 0.0,
+      "throughput_bytes_per_second": 14648359.363615891,
+      "mean_steal_attempts": 0,
+      "mean_steals_succeeded": 0
+    },
+    {
+      "operation": "backup",
+      "workload_id": "dev-20-seed-20261002",
+      "policy": "sequential",
+      "workers": 1,
+      "chunk": 2,
+      "repetitions": 1,
+      "experiment_config": {
+        "damage_ratio": null,
+        "damage_types": null
+      },
+      "successes": 1,
+      "mean_seconds": 0.0550597,
+      "stdev_seconds": 0.0,
+      "throughput_bytes_per_second": 6025041.90905508,
+      "mean_steal_attempts": 0,
+      "mean_steals_succeeded": 0
+    },
+    {
+      "operation": "backup",
+      "workload_id": "dev-20-seed-20261002",
+      "policy": "static",
+      "workers": 4,
+      "chunk": 2,
+      "repetitions": 1,
+      "experiment_config": {
+        "damage_ratio": null,
+        "damage_types": null
+      },
+      "successes": 1,
+      "mean_seconds": 0.0236639,
+      "stdev_seconds": 0.0,
+      "throughput_bytes_per_second": 14018695.143235054,
+      "mean_steal_attempts": 0,
+      "mean_steals_succeeded": 0
+    },
+    {
+      "operation": "backup",
+      "workload_id": "dev-20-seed-20261002",
+      "policy": "stealing",
+      "workers": 4,
+      "chunk": 2,
+      "repetitions": 1,
+      "experiment_config": {
+        "damage_ratio": null,
+        "damage_types": null
+      },
+      "successes": 1,
+      "mean_seconds": 0.0250576,
+      "stdev_seconds": 0.0,
+      "throughput_bytes_per_second": 13238977.396079434,
+      "mean_steal_attempts": 17,
+      "mean_steals_succeeded": 4
+    }
+  ]
+}

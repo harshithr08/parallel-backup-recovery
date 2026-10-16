@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "engine": "build/ipbrs-backup.exe",
+  "runs": [
+    {
+      "id": "dev-backup-sequential-r1",
+      "operation": "backup",
+      "workload_id": "dev-100-seed-241066",
+      "source": "data/dev-100",
+      "backup": "data/benchmark-backups",
+      "policy": "sequential",
+      "workers": 1,
+      "chunk": 1,
+      "manifest": "data/dev-100.manifest.json"
+    },
+    {
+      "id": "dev-backup-stealing-r1",
+      "operation": "backup",
+      "workload_id": "dev-100-seed-241066",
+      "source": "data/dev-100",
+      "backup": "data/benchmark-backups",
+      "policy": "stealing",
+      "workers": 4,
+      "chunk": 8,
+      "manifest": "data/dev-100.manifest.json"
+    }
+  ]
+}

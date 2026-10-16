@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "groups": [
+    {
+      "operation": "backup",
+      "workload_id": "dev-20-seed-20261002",
+      "policy": "dynamic",
+      "workers": 4,
+      "chunk": 2,
+      "repetitions": 1,
+      "experiment_config": {
+        "damage_ratio": null,
+        "damage_types": null,
+        "engine_kind": "cpp",
+        "recovery_mode": "selective"
+      },
+      "successes": 1,
+      "mean_seconds": 0.0270891,
+      "stdev_seconds": 0.0,
+      "throughput_bytes_per_second": 12246143.28272257,
+      "mean_steal_attempts": 0,
+      "mean_steals_succeeded": 0
+    },
+    {
+      "operation": "backup",
+      "workload_id": "dev-20-seed-20261002",
+      "policy": "sequential",
+      "workers": 1,
+      "chunk": 2,
+      "repetitions": 1,
+      "experiment_config": {
+        "damage_ratio": null,
+        "damage_types": null,
+        "engine_kind": "cpp",
+        "recovery_mode": "selective"
+      },
+      "successes": 1,
+      "mean_seconds": 0.0657196,
+      "stdev_seconds": 0.0,
+      "throughput_bytes_per_second": 5047763.528688549,
+      "mean_steal_attempts": 0,
+      "mean_steals_succeeded": 0
+    },
+    {
+      "operation": "backup",
+      "workload_id": "dev-20-seed-20261002",
+      "policy": "static",
+      "workers": 4,
+      "chunk": 2,
+      "repetitions": 1,
+      "experiment_config": {
+        "damage_ratio": null,
+        "damage_types": null,
+        "engine_kind": "cpp",
+        "recovery_mode": "selective"
+      },
+      "successes": 1,
+      "mean_seconds": 0.0335702,
+      "stdev_seconds": 0.0,
+      "throughput_bytes_per_second": 9881889.29467206,
+      "mean_steal_attempts": 0,
+      "mean_steals_succeeded": 0
+    },
+    {
+      "operation": "backup",
+      "workload_id": "dev-20-seed-20261002",
+      "policy": "stealing",
+      "workers": 4,
+      "chunk": 2,
+      "repetitions": 1,
+      "experiment_config": {
+        "damage_ratio": null,
+        "damage_types": null,
+        "engine_kind": "cpp",
+        "recovery_mode": "selective"
+      },
+      "successes": 1,
+      "mean_seconds": 0.0226195,
+      "stdev_seconds": 0.0,
+      "throughput_bytes_per_second": 14665974.048940074,
+      "mean_steal_attempts": 20,
+      "mean_steals_succeeded": 4
+    }
+  ]
+}

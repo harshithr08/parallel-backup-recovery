@@ -1,0 +1,3 @@
+operation,workload_id,policy,workers,chunk,repetitions,experiment_config,successes,mean_seconds,stdev_seconds,throughput_bytes_per_second,mean_steal_attempts,mean_steals_succeeded
+recover,target-full,sequential,1,1,1,"{'damage_ratio': 0.2, 'damage_types': 'missing,modified,corrupted,truncated'}",0,0.0885774,0.0,0.0,0,0
+recover,target-selective,sequential,1,1,1,"{'damage_ratio': 0.2, 'damage_types': 'missing,modified,corrupted,truncated'}",0,0.0922929,0.0,0.0,0,0

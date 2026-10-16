@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "groups": [
+    {
+      "operation": "recover",
+      "workload_id": "target-full",
+      "policy": "sequential",
+      "workers": 1,
+      "chunk": 1,
+      "repetitions": 1,
+      "experiment_config": {
+        "damage_ratio": 0.2,
+        "damage_types": "missing,modified,corrupted,truncated"
+      },
+      "successes": 0,
+      "mean_seconds": 0.0885774,
+      "stdev_seconds": 0.0,
+      "throughput_bytes_per_second": 0.0,
+      "mean_steal_attempts": 0,
+      "mean_steals_succeeded": 0
+    },
+    {
+      "operation": "recover",
+      "workload_id": "target-selective",
+      "policy": "sequential",
+      "workers": 1,
+      "chunk": 1,
+      "repetitions": 1,
+      "experiment_config": {
+        "damage_ratio": 0.2,
+        "damage_types": "missing,modified,corrupted,truncated"
+      },
+      "successes": 0,
+      "mean_seconds": 0.0922929,
+      "stdev_seconds": 0.0,
+      "throughput_bytes_per_second": 0.0,
+      "mean_steal_attempts": 0,
+      "mean_steals_succeeded": 0
+    }
+  ]
+}

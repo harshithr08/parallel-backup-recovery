@@ -1,0 +1,38 @@
+﻿{
+    "schema_version":  1,
+    "engine":  "build/ipbrs-backup.exe",
+    "runs":  [
+                 {
+                     "id":  "py-selective",
+                     "catalog_format":  "python_sqlite",
+                     "damage_ratio":  0.2,
+                     "policy":  "sequential",
+                     "backup":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\python-metadata-recovery-pilot/backups",
+                     "workers":  1,
+                     "source":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\python-metadata-recovery-pilot/target-selective",
+                     "recovery_mode":  "selective",
+                     "catalog":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\python-metadata-recovery-pilot/catalog.sqlite",
+                     "fixture_source":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\python-metadata-recovery-pilot/fixture-selective",
+                     "operation":  "recover",
+                     "damage_types":  "missing,modified,corrupted,truncated",
+                     "chunk":  1,
+                     "verification_backup_id":  "e6db55ba-b342-4fac-8f50-d48707c62e46"
+                 },
+                 {
+                     "id":  "py-full",
+                     "catalog_format":  "python_sqlite",
+                     "damage_ratio":  0.2,
+                     "policy":  "sequential",
+                     "backup":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\python-metadata-recovery-pilot/backups",
+                     "workers":  1,
+                     "source":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\python-metadata-recovery-pilot/target-full",
+                     "recovery_mode":  "full",
+                     "catalog":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\python-metadata-recovery-pilot/catalog.sqlite",
+                     "fixture_source":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\python-metadata-recovery-pilot/fixture-full",
+                     "operation":  "recover",
+                     "damage_types":  "missing,modified,corrupted,truncated",
+                     "chunk":  1,
+                     "verification_backup_id":  "e6db55ba-b342-4fac-8f50-d48707c62e46"
+                 }
+             ]
+}

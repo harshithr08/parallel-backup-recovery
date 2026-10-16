@@ -1,0 +1,2 @@
+operation,workload_id,policy,workers,chunk,repetitions,experiment_config,successes,mean_seconds,stdev_seconds,throughput_bytes_per_second,mean_steal_attempts,mean_steals_succeeded
+recover,source,sequential,1,1,1,"{'damage_ratio': 0.2, 'damage_types': 'missing,modified,corrupted,truncated', 'engine_kind': 'python_reference', 'recovery_mode': 'selective'}",0,0.0859846,0.0,0.0,0,0

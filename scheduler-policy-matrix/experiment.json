@@ -1,0 +1,54 @@
+﻿{
+    "schema_version":  1,
+    "engine":  "build/ipbrs-backup.exe",
+    "runs":  [
+                 {
+                     "source":  "scheduler-and-recovery-pilot/source",
+                     "id":  "backup-sequential-r1",
+                     "manifest":  "scheduler-and-recovery-pilot/source.manifest.json",
+                     "repetition":  1,
+                     "backup":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\scheduler-policy-matrix/backups-sequential",
+                     "policy":  "sequential",
+                     "workload_id":  "dev-20-seed-20261002",
+                     "workers":  1,
+                     "chunk":  2,
+                     "operation":  "backup"
+                 },
+                 {
+                     "source":  "scheduler-and-recovery-pilot/source",
+                     "id":  "backup-static-r1",
+                     "manifest":  "scheduler-and-recovery-pilot/source.manifest.json",
+                     "repetition":  1,
+                     "backup":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\scheduler-policy-matrix/backups-static",
+                     "policy":  "static",
+                     "workload_id":  "dev-20-seed-20261002",
+                     "workers":  4,
+                     "chunk":  2,
+                     "operation":  "backup"
+                 },
+                 {
+                     "source":  "scheduler-and-recovery-pilot/source",
+                     "id":  "backup-dynamic-r1",
+                     "manifest":  "scheduler-and-recovery-pilot/source.manifest.json",
+                     "repetition":  1,
+                     "backup":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\scheduler-policy-matrix/backups-dynamic",
+                     "policy":  "dynamic",
+                     "workload_id":  "dev-20-seed-20261002",
+                     "workers":  4,
+                     "chunk":  2,
+                     "operation":  "backup"
+                 },
+                 {
+                     "source":  "scheduler-and-recovery-pilot/source",
+                     "id":  "backup-stealing-r1",
+                     "manifest":  "scheduler-and-recovery-pilot/source.manifest.json",
+                     "repetition":  1,
+                     "backup":  "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\scheduler-policy-matrix/backups-stealing",
+                     "policy":  "stealing",
+                     "workload_id":  "dev-20-seed-20261002",
+                     "workers":  4,
+                     "chunk":  2,
+                     "operation":  "backup"
+                 }
+             ]
+}

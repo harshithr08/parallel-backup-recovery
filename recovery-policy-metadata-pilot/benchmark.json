@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "engine": "build/ipbrs-backup.exe",
+  "runs": [
+    {
+      "id": "py-selective",
+      "catalog_format": "python_sqlite",
+      "damage_ratio": 0.2,
+      "policy": "sequential",
+      "backup": "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\recovery-policy-metadata-pilot/backups",
+      "workers": 1,
+      "source": "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\recovery-policy-metadata-pilot/target-selective",
+      "recovery_mode": "selective",
+      "catalog": "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\recovery-policy-metadata-pilot/catalog.sqlite",
+      "fixture_source": "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\recovery-policy-metadata-pilot/fixture-selective",
+      "operation": "recover",
+      "damage_types": "missing,modified,corrupted,truncated",
+      "chunk": 1,
+      "verification_backup_id": "9e4e33ef-2ee2-4d18-9a3b-5a93f09aa283",
+      "engine_kind": "python_reference"
+    },
+    {
+      "id": "py-full",
+      "catalog_format": "python_sqlite",
+      "damage_ratio": 0.2,
+      "policy": "sequential",
+      "backup": "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\recovery-policy-metadata-pilot/backups",
+      "workers": 1,
+      "source": "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\recovery-policy-metadata-pilot/target-full",
+      "recovery_mode": "full",
+      "catalog": "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\recovery-policy-metadata-pilot/catalog.sqlite",
+      "fixture_source": "C:\\Users\\Sadhana\\OneDrive\\Desktop\\Intelligent Parallel Backup and Recovery System\\recovery-policy-metadata-pilot/fixture-full",
+      "operation": "recover",
+      "damage_types": "missing,modified,corrupted,truncated",
+      "chunk": 1,
+      "verification_backup_id": "9e4e33ef-2ee2-4d18-9a3b-5a93f09aa283",
+      "engine_kind": "python_reference"
+    }
+  ]
+}

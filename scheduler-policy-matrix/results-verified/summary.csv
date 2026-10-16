@@ -1,0 +1,5 @@
+operation,workload_id,policy,workers,chunk,repetitions,experiment_config,successes,mean_seconds,stdev_seconds,throughput_bytes_per_second,mean_steal_attempts,mean_steals_succeeded
+backup,dev-20-seed-20261002,dynamic,4,2,1,"{'damage_ratio': None, 'damage_types': None, 'engine_kind': 'cpp', 'recovery_mode': 'selective'}",1,0.0270891,0.0,12246143.28272257,0,0
+backup,dev-20-seed-20261002,sequential,1,2,1,"{'damage_ratio': None, 'damage_types': None, 'engine_kind': 'cpp', 'recovery_mode': 'selective'}",1,0.0657196,0.0,5047763.528688549,0,0
+backup,dev-20-seed-20261002,static,4,2,1,"{'damage_ratio': None, 'damage_types': None, 'engine_kind': 'cpp', 'recovery_mode': 'selective'}",1,0.0335702,0.0,9881889.29467206,0,0
+backup,dev-20-seed-20261002,stealing,4,2,1,"{'damage_ratio': None, 'damage_types': None, 'engine_kind': 'cpp', 'recovery_mode': 'selective'}",1,0.0226195,0.0,14665974.048940074,20,4

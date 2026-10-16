@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "protocol_id": "ipbrs-final-v1",
+  "approval_status": "provisional",
+  "engine": "build/ipbrs-backup.exe",
+  "dataset_sizes": [10000, 50000, 100000, 250000],
+  "heterogeneity_profiles": ["low", "medium", "high"],
+  "workers": [1, 2, 4, 8],
+  "policies": ["sequential", "static", "dynamic", "stealing", "adaptive"],
+  "repetitions": null,
+  "duplicate_ratio": null,
+  "recovery_damage_ratios": null,
+  "damage_types": null,
+  "dataset_seed_base": null,
+  "execution_order_seed_base": null,
+  "recovery_damage_seed_base": null,
+  "files_per_directory": null,
+  "fixed_chunk_sizes": null,
+  "adaptive_start_chunks": null,
+  "adaptive_min_chunk": null,
+  "adaptive_max_chunk": null
+}
