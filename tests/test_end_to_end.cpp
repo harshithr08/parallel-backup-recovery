@@ -191,6 +191,35 @@ TEST(e2e_damaged_backup_copy_is_never_applied) {
     CHECK(testing::read_file(dir / "src" / "big" / "b000.dat") == damaged); // left as it was
 }
 
+TEST(e2e_dry_run_reports_damage_without_touching_files) {
+    testing::TempDir dir;
+    make_dataset(dir / "src");
+    CHECK(backup(dir / "src", dir / "bk", ipbrs_run()).committed);
+    flip_byte(dir / "src" / "big" / "b000.dat", 70000, true); // inside block 1
+    fs::remove(dir / "src" / "d0000" / "f0000001.dat");
+    const std::string damaged = testing::read_file(dir / "src" / "big" / "b000.dat");
+
+    RecoverOptions options;
+    options.source = dir / "src";
+    options.backup = dir / "bk";
+    options.dry_run = true;
+    options.run = ipbrs_run();
+    const RecoverResult dry = run_recover(options);
+    CHECK_EQ(dry.planned_files, 2u);
+    CHECK_EQ(dry.missing, 1u);
+    CHECK_EQ(dry.content_damaged, 1u);
+    CHECK_EQ(dry.restored_files, 0u);
+    CHECK_EQ(dry.restored_bytes, 0u);
+    CHECK(testing::read_file(dir / "src" / "big" / "b000.dat") == damaged);
+    CHECK(!fs::exists(dir / "src" / "d0000" / "f0000001.dat"));
+
+    options.dry_run = false;
+    const RecoverResult real = run_recover(options);
+    CHECK_EQ(real.restored_files, dry.planned_files);
+    CHECK_EQ(real.restored_bytes, dry.planned_bytes);
+    CHECK_EQ(real.verify_bad, 0u);
+}
+
 TEST(e2e_backup_rejects_unsafe_destinations) {
     testing::TempDir dir;
     make_dataset(dir / "src");

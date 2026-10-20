@@ -23,7 +23,7 @@ const char* kUsage =
     "  backup   --source DIR --backup DIR [--block-kib N] [--no-sync]\n"
     "  verify   --backup DIR\n"
     "  recover  --source DIR --backup DIR [--mode block|file|full] [--trust-mtime] [--no-verify]\n"
-    "           [--no-sync]\n"
+    "           [--no-sync] [--dry-run]\n"
     "\n"
     "scheduling (backup, verify, recover):\n"
     "  --sched seq|static|dynamic|steal   (default steal)\n"
@@ -112,7 +112,7 @@ int run(int argc, char** argv) {
         return argc < 2 ? 1 : 0;
     }
     const std::string command = argv[1];
-    Args args(argc, argv, {"trust-mtime", "no-verify", "no-sync"});
+    Args args(argc, argv, {"trust-mtime", "no-verify", "no-sync", "dry-run"});
     const std::string json_file = args.text("json");
     std::string json;
     int status = 0;
@@ -167,6 +167,7 @@ int run(int argc, char** argv) {
         o.trust_mtime = args.flag("trust-mtime");
         o.post_verify = !args.flag("no-verify");
         o.sync = !args.flag("no-sync");
+        o.dry_run = args.flag("dry-run");
         o.run = run_config(args);
         args.check_all_used();
         const RecoverResult r = run_recover(o);

@@ -67,6 +67,7 @@ struct RecoverOptions {
     bool trust_mtime = false; // skip hashing files whose size and mtime match
     bool post_verify = true;  // re-hash repaired files afterwards (timed separately)
     bool sync = true;         // flush repaired files to stable storage
+    bool dry_run = false;     // classify and plan only; the source is not modified
     RunConfig run;
 };
 
@@ -78,6 +79,8 @@ struct RecoverResult {
     std::uint64_t metadata_only = 0;
     std::uint64_t unreadable = 0;
     std::uint64_t damaged_blocks = 0;
+    std::uint64_t planned_files = 0; // files that need restoring (also set by dry runs)
+    std::uint64_t planned_bytes = 0;
     std::uint64_t restored_files = 0;
     std::uint64_t restored_bytes = 0;
     std::uint64_t failed_files = 0;

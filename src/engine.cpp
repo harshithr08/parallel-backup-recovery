@@ -464,7 +464,10 @@ RecoverResult run_recover(const RecoverOptions& options) {
 
     PlanStats plan;
     const std::vector<Task> tasks = plan_tasks(ranges, plan_config(run, catalog.block_size), &plan);
-    create_parents(options.source, catalog, created);
+    for (const Range& r : ranges) result.planned_bytes += r.bytes;
+    for (std::uint32_t f : touched)
+        if (scan.state[f] != State::MetadataOnly) ++result.planned_files;
+    if (!options.dry_run) create_parents(options.source, catalog, created);
     const std::uint64_t prepare_ns = now_ns() - phase;
 
     // 3. Restore: every block read from the backup is checked against the
@@ -472,7 +475,8 @@ RecoverResult run_recover(const RecoverOptions& options) {
     Flags failed = make_flags(count);
     Flags timestamped = make_flags(count);
     auto buffers = worker_buffers(threads, catalog.block_size);
-    const SchedulerStats restore = run_tasks(tasks, run.sched, [&](const Task& t, int worker) -> std::uint64_t {
+    SchedulerStats restore;
+    if (!options.dry_run) restore = run_tasks(tasks, run.sched, [&](const Task& t, int worker) -> std::uint64_t {
         const CatalogFile& c = catalog.files[t.file];
         std::vector<char>& buffer = buffers[static_cast<std::size_t>(worker)];
         try {
@@ -503,7 +507,7 @@ RecoverResult run_recover(const RecoverOptions& options) {
 
     // 4. Timestamps for block-restored, split and metadata-only files.
     phase = now_ns();
-    parallel_for(touched.size(), threads, [&](std::size_t i, int) {
+    parallel_for(options.dry_run ? 0 : touched.size(), threads, [&](std::size_t i, int) {
         const std::uint32_t f = touched[i];
         if (failed[f].load() || timestamped[f].load()) return;
         File(native_path(options.source, catalog.files[f].path), File::Mode::WriteExisting)
@@ -514,13 +518,13 @@ RecoverResult run_recover(const RecoverOptions& options) {
 
     for (std::uint32_t f : touched) {
         if (failed[f].load()) ++result.failed_files;
-        else if (scan.state[f] != State::MetadataOnly) ++result.restored_files;
+        else if (!options.dry_run && scan.state[f] != State::MetadataOnly) ++result.restored_files;
     }
     for (const WorkerStats& w : restore.workers) result.restored_bytes += w.bytes;
 
     // 5. Independent post-check of every touched file (outside total_ns).
     std::uint64_t verify_ns = 0;
-    if (options.post_verify && !touched.empty()) {
+    if (options.post_verify && !options.dry_run && !touched.empty()) {
         phase = now_ns();
         const Scan check = scan_tree(options.source, false, catalog, touched, false, run);
         for (std::uint32_t f : touched)
@@ -535,6 +539,9 @@ RecoverResult run_recover(const RecoverOptions& options) {
         .field("mode", recovery_mode_name(options.mode))
         .field("trust_mtime", options.trust_mtime)
         .field("sync", options.sync)
+        .field("dry_run", options.dry_run)
+        .field("planned_files", result.planned_files)
+        .field("planned_bytes", result.planned_bytes)
         .field("catalog_files", count)
         .field("catalog_bytes", catalog_bytes)
         .field("missing", result.missing)
