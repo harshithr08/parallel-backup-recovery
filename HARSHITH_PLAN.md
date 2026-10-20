@@ -41,7 +41,7 @@ Phase C - benchmark tooling (bench/)
 
 Phase D - experiments (raw results committed)
 - [x] D1 backup scaling (279 runs, all verified; drive shows bimodal slow mode)
-- [ ] D2 recovery comparison
+- [x] D2 recovery comparison (270 runs, all repaired+verified)
 - [ ] D3 detection/verify scaling
 
 Phase E - analysis
