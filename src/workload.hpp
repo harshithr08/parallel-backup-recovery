@@ -44,6 +44,9 @@ struct Range {
     std::uint32_t block_count = 1;
     std::uint64_t bytes = 0;
     bool whole_file = true;
+    // False when every piece would write into the same destination file;
+    // NTFS serialises such writers, so splitting would only add contention.
+    bool splittable = true;
 };
 
 struct PlanConfig {

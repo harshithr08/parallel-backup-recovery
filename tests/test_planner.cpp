@@ -95,6 +95,16 @@ TEST(planner_splits_only_large_ranges_and_tiles_them) {
     CHECK_EQ(bytes, ranges[1001].bytes);
 }
 
+TEST(planner_never_splits_unsplittable_ranges) {
+    std::vector<Range> ranges = mixed_ranges();
+    ranges[1000].splittable = false; // e.g. a whole-file restore into one target
+    PlanStats stats;
+    const std::vector<Task> tasks = plan_tasks(ranges, config(16), &stats);
+    CHECK_EQ(std::count_if(tasks.begin(), tasks.end(), [](const Task& t) { return t.file == 1000; }), 1);
+    CHECK(stats.split_files == std::vector<std::uint32_t>({1001})); // the other big file still splits
+    check_tiling(ranges, tasks);
+}
+
 TEST(planner_threshold_shrinks_with_more_threads) {
     const std::vector<Range> ranges = mixed_ranges();
     PlanStats four, sixteen;

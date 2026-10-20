@@ -44,13 +44,6 @@ void create_parents(const fs::path& root, const Catalog& catalog, const std::vec
         if (!dir.empty()) fs::create_directories(native_path(root, dir));
 }
 
-void presize(const fs::path& root, const Catalog& catalog, const std::vector<std::uint32_t>& files, int threads) {
-    parallel_for(files.size(), threads, [&](std::size_t i, int) {
-        const CatalogFile& c = catalog.files[files[i]];
-        File(native_path(root, c.path), File::Mode::WriteCreate).resize(c.size);
-    });
-}
-
 // Reads blocks of one cataloged file either from a plain tree (root/path) or
 // from a backup's files/segments layout, keeping the current file open.
 class BlockSource {
@@ -430,7 +423,6 @@ RecoverResult run_recover(const RecoverOptions& options) {
     // 2. Decide what to restore.
     std::uint64_t phase = now_ns();
     std::vector<Range> ranges;
-    std::vector<std::uint8_t> creates(count, 0);
     std::vector<std::uint32_t> touched, created;
     for (std::uint32_t f = 0; f < count; ++f) {
         const State state = scan.state[f];
@@ -462,8 +454,10 @@ RecoverResult run_recover(const RecoverOptions& options) {
             }
             continue;
         }
-        ranges.push_back(whole_range(catalog, f));
-        creates[f] = 1;
+        // A whole-file restore writes one target file: keep it as a single task.
+        Range r = whole_range(catalog, f);
+        r.splittable = false;
+        ranges.push_back(r);
         created.push_back(f);
     }
     result.damaged_blocks = scan.damaged_blocks;
@@ -471,10 +465,6 @@ RecoverResult run_recover(const RecoverOptions& options) {
     PlanStats plan;
     const std::vector<Task> tasks = plan_tasks(ranges, plan_config(run, catalog.block_size), &plan);
     create_parents(options.source, catalog, created);
-    std::vector<std::uint32_t> presized;
-    for (std::uint32_t f : plan.split_files)
-        if (creates[f]) presized.push_back(f);
-    presize(options.source, catalog, presized, threads);
     const std::uint64_t prepare_ns = now_ns() - phase;
 
     // 3. Restore: every block read from the backup is checked against the

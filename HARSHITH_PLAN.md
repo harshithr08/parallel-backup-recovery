@@ -31,7 +31,7 @@ Phase B - fixes from testing/review
 - [x] B1 planner edge cases (zero-byte, single block, segment alignment) + tests
 - [x] B2 catalog robustness (corrupt/tampered catalogs) + tests
 - [x] B3 steal statistics and scheduling-overhead reporting
-- [ ] B4 one commit per bug found by tests (if any)
+- [x] B4 keep whole-file restores unsplit (found by C3 trial)
 
 Phase C - benchmark tooling (bench/)
 - [x] C1 workloads.py (small-only, mixed, huge-files)

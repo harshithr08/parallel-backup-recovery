@@ -95,7 +95,7 @@ std::vector<Task> plan_tasks(const std::vector<Range>& ranges, const PlanConfig&
     std::vector<Task> tasks;
     tasks.reserve(ranges.size());
     for (const Range& r : ranges) {
-        if (threshold == 0 || r.bytes <= threshold || r.block_count <= 1) {
+        if (threshold == 0 || !r.splittable || r.bytes <= threshold || r.block_count <= 1) {
             Task t;
             t.file = r.file;
             t.first_block = r.first_block;
