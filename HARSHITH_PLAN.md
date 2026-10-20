@@ -40,7 +40,7 @@ Phase C - benchmark tooling (bench/)
 - [x] C4 recover --dry-run (c459223) + run_scan.py (serial vs parallel detection, trust-mtime vs full hash)
 
 Phase D - experiments (raw results committed)
-- [ ] D1 backup scaling
+- [x] D1 backup scaling (279 runs, all verified; drive shows bimodal slow mode)
 - [ ] D2 recovery comparison
 - [ ] D3 detection/verify scaling
 
