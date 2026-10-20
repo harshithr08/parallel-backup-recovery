@@ -2,7 +2,8 @@
 
 Speedup uses the best repetition of each configuration (min time) over the
 best sequential run, because write-heavy runs on the test machine show a
-bimodal slow mode from the drive; read-only runs barely differ either way.
+intermittent slow mode from the drive (identical runs up to 4x slower);
+read-only runs barely differ either way.
 
 usage: python bench/plot.py [--results results] [--out results/figures]
 """

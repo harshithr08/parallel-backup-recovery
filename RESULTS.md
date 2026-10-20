@@ -42,7 +42,7 @@ Generated with a fixed seed by `bench/workloads.py`. 5% of files are duplicates 
 
 - Runs execute in a seeded random order, so slow drift such as heat or caching does not favour one configuration. Each configuration has three repetitions, with a 2 s pause between runs and an untimed warm-up pass per workload.
 - **Correctness is checked separately from timing.** After a backup, an independent `verify` re-hashes the stored copy. Every recovery re-hashes the files it repaired. Every detection scan is compared with the known damage.
-- **Timings are best of three.** Write-heavy runs on this machine are bimodal: identical single-thread backups take either about 40 s or 140–170 s (`small`). That is the nearly full SSD falling into a slow write mode, not the engine, so the best repetition is the fairer measure of the system. Read-only runs have small spread (typically ±0.01–0.1 s), and their mean and best agree.
+- **Timings are best of three.** Write-heavy runs on this machine vary far more than the work does: identical single-thread backups of `small` took 36–43 s in 11 of 21 runs and 76–172 s in the other 10. That points to the nearly full SSD falling into a slow write mode (and Defender scanning), not to the engine, so the best repetition is the fairer measure of the system. Read-only runs have small spread (typically ±0.01–0.1 s), and their mean and best agree.
 
 ## 2. Verify and damage detection (read and hash)
 
