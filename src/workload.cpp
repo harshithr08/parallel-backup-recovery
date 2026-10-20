@@ -89,6 +89,9 @@ std::vector<Task> plan_tasks(const std::vector<Range>& ranges, const PlanConfig&
     }
     out.split_threshold = threshold;
 
+    // Cost stays >= 1 so the stealing scheduler always sees unclaimed work.
+    auto task_cost = [&](std::uint64_t bytes) { return std::max<std::uint64_t>(1, config.per_task_cost + bytes); };
+
     std::vector<Task> tasks;
     tasks.reserve(ranges.size());
     for (const Range& r : ranges) {
@@ -98,23 +101,29 @@ std::vector<Task> plan_tasks(const std::vector<Range>& ranges, const PlanConfig&
             t.first_block = r.first_block;
             t.block_count = r.block_count;
             t.whole_file = r.whole_file;
-            t.cost = config.per_task_cost + r.bytes;
+            t.cost = task_cost(r.bytes);
             tasks.push_back(t);
             continue;
         }
         out.split_files.push_back(r.file);
+        // Piece boundaries sit at absolute multiples of blocks_per_piece (itself
+        // a multiple of align_blocks), so a piece never straddles a segment
+        // even when the range starts mid-file.
         std::uint64_t remaining = r.bytes;
-        for (std::uint32_t done = 0; done < r.block_count; done += blocks_per_piece) {
+        const std::uint32_t end = r.first_block + r.block_count;
+        for (std::uint32_t start = r.first_block; start < end;) {
+            const std::uint32_t boundary = (start / blocks_per_piece + 1) * blocks_per_piece;
             Task t;
             t.file = r.file;
-            t.first_block = r.first_block + done;
-            t.block_count = std::min(blocks_per_piece, r.block_count - done);
+            t.first_block = start;
+            t.block_count = std::min(boundary, end) - start;
             t.whole_file = false; // pieces never create the file; the caller pre-sizes it
             const std::uint64_t piece = std::min<std::uint64_t>(remaining,
                 static_cast<std::uint64_t>(t.block_count) * config.block_size);
             remaining -= piece;
-            t.cost = config.per_task_cost + piece;
+            t.cost = task_cost(piece);
             tasks.push_back(t);
+            start += t.block_count;
         }
     }
     out.tasks = tasks.size();

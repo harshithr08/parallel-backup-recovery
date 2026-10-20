@@ -28,7 +28,7 @@ Phase A - tests
 - [x] A5 end-to-end backup -> 4 damage types -> block/file/full recovery -> byte compare
 
 Phase B - fixes from testing/review
-- [ ] B1 planner edge cases (zero-byte, single block, segment alignment) + tests
+- [x] B1 planner edge cases (zero-byte, single block, segment alignment) + tests
 - [ ] B2 catalog robustness (corrupt/tampered catalogs) + tests
 - [ ] B3 steal statistics and scheduling-overhead reporting
 - [ ] B4 one commit per bug found by tests (if any)
