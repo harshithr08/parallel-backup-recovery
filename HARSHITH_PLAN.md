@@ -5,29 +5,6 @@ File-level scheduling cannot finish faster than its largest file; splitting larg
 stealable block tasks removes that bound. The same tree enables parallel damage detection and
 block-level selective recovery.
 
-## Audit findings that drive the plan
-- `src/scheduler.cpp` adaptive policy computes cost CV but never uses it (documented rule missing).
-- No task splitting: "granularity" is files-per-claim only.
-- `src/recovery.cpp` classification hashes every file serially; only restore is parallel.
-- `src/backup.cpp` reads each file 4 times (hash, copy, hash temp, hash final).
-- Cost model is size only; per-file overhead ignored.
-- Teammate's large-scale results live in gitignored `data/` on another machine; treat as unavailable.
-
-## Milestones (one commit or more each; measure before/after)
-1. Build: CMake + VS 2022 Build Tools; C++ tests must fail, not skip, when exe missing. Record env.
-2. Baseline: current engine on 3 small workloads, 1/2/4/8/16 threads, 5 reps, local non-synced disk.
-3. Scheduler stress test (exactly-once, all policies/thread counts); fix steal edge cases.
-4. Quick wins: single-pass read-hash-write; parallel classification via scheduler; size check
-   before hashing; implement or drop CV rule; calibrated cost a + b*size.
-5. Catalog schema 4: per-block hashes + Merkle root (C++ writer/verifier, Python oracle reader).
-6. Hybrid scheduler: split files above threshold into block tasks; same scheduler for
-   backup/verify/recover.
-7. Block-level selective recovery: parallel tree compare, restore damaged blocks only.
-8. Evaluation: workloads small-only / mixed / few-huge-files; policies sequential, static,
-   dynamic, stealing, file-IPBRS, hybrid-IPBRS; threads 1-16; warm and cold cache; 5 reps.
-9. Analysis + charts from raw records (speedup, efficiency, imbalance, idle, overhead, bytes avoided).
-10. Docs/paper/slides updated so every claim matches code and measurements.
-
 ## Findings so far (Ryzen 7 7435HS 8C/16T, 16 GB, WD SN740 NVMe, C: 94% full)
 Workload: 4,000 x 8-16 KiB + 4 x 400 MiB, warm cache.
 - Read+hash (verify/scan): file-level stalls at ~1.7 s from 4 threads (72% idle at 16);
@@ -38,14 +15,42 @@ Workload: 4,000 x 8-16 KiB + 4 x 400 MiB, warm cache.
 - Backup/recovery flush (fsync) every stored object; --no-sync for comparison.
 - Always build from PowerShell: `cmd /c "<repo>\build.bat"`; check for "Built".
 
-## Status
-- [x] 1 Build
-- [ ] 2 Baseline
-- [ ] 3 Stress tests
-- [ ] 4 Quick wins
-- [ ] 5 Merkle catalog
-- [ ] 6 Hybrid scheduler
-- [ ] 7 Block recovery
-- [ ] 8 Evaluation
-- [ ] 9 Analysis
-- [ ] 10 Docs
+## Commit plan (one focused commit per step; report after each)
+Done:
+- [x] Rewrite engine (198fb6f)
+- [x] Segment layout + durable writes (6140f80)
+
+Phase A - tests
+- [ ] A1 test harness + ctest via `build.bat test`
+- [ ] A2 SHA-256 NIST vectors
+- [ ] A3 Merkle tree + catalog root checks
+- [ ] A4 scheduler exactly-once, all policies x 1/2/3/8/16 threads, failure accounting
+- [ ] A5 end-to-end backup -> 4 damage types -> block/file/full recovery -> byte compare
+
+Phase B - fixes from testing/review
+- [ ] B1 planner edge cases (zero-byte, single block, segment alignment) + tests
+- [ ] B2 catalog robustness (corrupt/tampered catalogs) + tests
+- [ ] B3 steal statistics and scheduling-overhead reporting
+- [ ] B4 one commit per bug found by tests (if any)
+
+Phase C - benchmark tooling (bench/)
+- [ ] C1 workloads.py (small-only, mixed, huge-files)
+- [ ] C2 run_backup.py (scaling matrix, repeats, settle, CSV)
+- [ ] C3 run_recovery.py (block/file/full at 5% and 20% damage)
+- [ ] C4 run_scan.py (serial vs parallel detection, trust-mtime vs full hash)
+
+Phase D - experiments (raw results committed)
+- [ ] D1 backup scaling
+- [ ] D2 recovery comparison
+- [ ] D3 detection/verify scaling
+
+Phase E - analysis
+- [ ] E1 plot.py speedup/efficiency
+- [ ] E2 imbalance/idle/bytes-avoided charts
+- [ ] E3 RESULTS.md
+
+Phase F - docs and cleanup
+- [ ] F1 README.md
+- [ ] F2 DESIGN.md
+- [ ] F3 remove legacy/ (with approval)
+- [ ] F4 final plan update
