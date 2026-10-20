@@ -45,7 +45,7 @@ Phase D - experiments (raw results committed)
 - [x] D3 detection/verify scaling (324 runs, all clean)
 
 Phase E - analysis
-- [ ] E1 plot.py speedup/efficiency
+- [x] E1 plot.py speedup/efficiency
 - [ ] E2 imbalance/idle/bytes-avoided charts
 - [ ] E3 RESULTS.md
 
