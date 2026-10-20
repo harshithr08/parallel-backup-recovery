@@ -34,7 +34,7 @@ Phase B - fixes from testing/review
 - [ ] B4 one commit per bug found by tests (if any)
 
 Phase C - benchmark tooling (bench/)
-- [ ] C1 workloads.py (small-only, mixed, huge-files)
+- [x] C1 workloads.py (small-only, mixed, huge-files)
 - [ ] C2 run_backup.py (scaling matrix, repeats, settle, CSV)
 - [ ] C3 run_recovery.py (block/file/full at 5% and 20% damage)
 - [ ] C4 run_scan.py (serial vs parallel detection, trust-mtime vs full hash)
