@@ -82,7 +82,10 @@ std::vector<Task> plan_tasks(const std::vector<Range>& ranges, const PlanConfig&
     if (config.split == Split::Adaptive && config.threads > 1) {
         const std::uint64_t pieces = static_cast<std::uint64_t>(config.threads) * std::max<std::uint64_t>(1, config.split_factor);
         threshold = std::max<std::uint64_t>(config.block_size, total / pieces);
-        blocks_per_piece = static_cast<std::uint32_t>(std::max<std::uint64_t>(1, threshold / config.block_size));
+        const std::uint64_t align = std::max<std::uint32_t>(1, config.align_blocks);
+        const std::uint64_t blocks = std::max<std::uint64_t>(1, threshold / config.block_size);
+        blocks_per_piece = static_cast<std::uint32_t>((blocks + align - 1) / align * align);
+        threshold = std::max<std::uint64_t>(threshold, static_cast<std::uint64_t>(blocks_per_piece) * config.block_size);
     }
     out.split_threshold = threshold;
 

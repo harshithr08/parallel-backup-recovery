@@ -28,8 +28,18 @@ block-level selective recovery.
 9. Analysis + charts from raw records (speedup, efficiency, imbalance, idle, overhead, bytes avoided).
 10. Docs/paper/slides updated so every claim matches code and measurements.
 
+## Findings so far (Ryzen 7 7435HS 8C/16T, 16 GB, WD SN740 NVMe, C: 94% full)
+Workload: 4,000 x 8-16 KiB + 4 x 400 MiB, warm cache.
+- Read+hash (verify/scan): file-level stalls at ~1.7 s from 4 threads (72% idle at 16);
+  block split 0.78-0.86 s at 16 threads = 2.2x over file-level, 7.8x over 1 thread.
+- Backup is SSD-write-bound (~270 MB/s): ~2x speedup max. Concurrent writes into one
+  file were slow on NTFS -> backup stores files > 16 blocks as segment objects; with
+  segments, split and file-level backup are about equal in time, and imbalance drops 0.42 -> 0.
+- Backup/recovery flush (fsync) every stored object; --no-sync for comparison.
+- Always build from PowerShell: `cmd /c "<repo>\build.bat"`; check for "Built".
+
 ## Status
-- [ ] 1 Build
+- [x] 1 Build
 - [ ] 2 Baseline
 - [ ] 3 Stress tests
 - [ ] 4 Quick wins

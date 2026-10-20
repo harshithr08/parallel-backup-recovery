@@ -28,6 +28,7 @@ public:
     void write_at(const void* buffer, std::size_t size, std::uint64_t offset);
     void resize(std::uint64_t size);
     void set_mtime(FileTime mtime);
+    void sync(); // flush written data to stable storage
 
 private:
 #ifdef _WIN32

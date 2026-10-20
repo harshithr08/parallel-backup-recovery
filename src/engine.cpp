@@ -51,6 +51,34 @@ void presize(const fs::path& root, const Catalog& catalog, const std::vector<std
     });
 }
 
+// Reads blocks of one cataloged file either from a plain tree (root/path) or
+// from a backup's files/segments layout, keeping the current file open.
+class BlockSource {
+public:
+    BlockSource(const fs::path& root, bool is_backup, const Catalog& catalog, const CatalogFile& file)
+        : root_(root), backup_(is_backup), catalog_(catalog), file_(file) {}
+
+    std::size_t read(std::uint32_t block, char* buffer) {
+        std::uint64_t offset = static_cast<std::uint64_t>(block) * catalog_.block_size;
+        fs::path path = backup_ ? stored_path(root_, catalog_, file_, block, offset)
+                                : native_path(root_, file_.path);
+        if (!open_ || path != current_) {
+            open_.reset(new File(path, File::Mode::Read));
+            current_ = std::move(path);
+        }
+        const std::uint64_t length = block_length(file_.size, catalog_.block_size, block);
+        return open_->read_at(buffer, static_cast<std::size_t>(length), offset);
+    }
+
+private:
+    const fs::path& root_;
+    bool backup_;
+    const Catalog& catalog_;
+    const CatalogFile& file_;
+    std::unique_ptr<File> open_;
+    fs::path current_;
+};
+
 enum class State : std::uint8_t { Ok, Missing, SizeChanged, Damaged, MetadataOnly, Unreadable };
 
 struct Scan {
@@ -64,10 +92,11 @@ struct Scan {
     SchedulerStats hash;
 };
 
-// Classifies cataloged files under root in two parallel phases: metadata
-// (exists, size, mtime) and block hashing through the shared scheduler.
-Scan scan_tree(const fs::path& root, const Catalog& catalog, const std::vector<std::uint32_t>& subset,
-               bool trust_mtime, const RunConfig& run) {
+// Classifies cataloged files in two parallel phases: metadata (exists, size,
+// mtime) and block hashing through the shared scheduler. With is_backup, root
+// is a backup directory; segmented files are then checked by hashing alone.
+Scan scan_tree(const fs::path& root, bool is_backup, const Catalog& catalog,
+               const std::vector<std::uint32_t>& subset, bool trust_mtime, const RunConfig& run) {
     const std::size_t count = catalog.files.size();
     const int threads = run.threads();
     Scan scan;
@@ -79,9 +108,13 @@ Scan scan_tree(const fs::path& root, const Catalog& catalog, const std::vector<s
     parallel_for(subset.size(), threads, [&](std::size_t i, int) {
         const std::uint32_t f = subset[i];
         const CatalogFile& c = catalog.files[f];
+        if (is_backup && catalog.segmented(c)) {
+            needs_hash[f] = 1;
+            return;
+        }
         PathInfo info;
         try {
-            info = stat_path(native_path(root, c.path));
+            info = stat_path(is_backup ? payload_root(root) / fs::u8path(c.path) : native_path(root, c.path));
         } catch (const std::exception&) {
             scan.state[f] = State::Unreadable;
             return;
@@ -117,12 +150,11 @@ Scan scan_tree(const fs::path& root, const Catalog& catalog, const std::vector<s
         const CatalogFile& c = catalog.files[t.file];
         std::vector<char>& buffer = buffers[static_cast<std::size_t>(worker)];
         try {
-            File in(native_path(root, c.path), File::Mode::Read);
+            BlockSource in(root, is_backup, catalog, c);
             std::uint64_t bytes = 0;
             for (std::uint32_t b = t.first_block; b < t.first_block + t.block_count; ++b) {
                 const std::uint64_t length = block_length(c.size, catalog.block_size, b);
-                const std::size_t got = in.read_at(buffer.data(), static_cast<std::size_t>(length),
-                                                   static_cast<std::uint64_t>(b) * catalog.block_size);
+                const std::size_t got = in.read(b, buffer.data());
                 if (got != length || leaf_hash(buffer.data(), got) != c.leaves[b]) scan.bad_blocks[t.file][b] = 1;
                 bytes += got;
             }
@@ -219,15 +251,22 @@ BackupResult run_backup(const BackupOptions& options) {
         c.leaves.resize(block_count(c.size, catalog.block_size));
         ranges[i] = whole_range(catalog, static_cast<std::uint32_t>(i));
     }
+    PlanConfig plan_cfg = plan_config(run, catalog.block_size);
+    plan_cfg.align_blocks = catalog.segment_blocks; // a piece owns whole segment objects
     PlanStats plan;
-    const std::vector<Task> tasks = plan_tasks(ranges, plan_config(run, catalog.block_size), &plan);
+    const std::vector<Task> tasks = plan_tasks(ranges, plan_cfg, &plan);
     const fs::path payload = payload_root(options.backup);
+    const fs::path segments = segment_root(options.backup);
     fs::create_directories(payload);
-    create_parents(payload, catalog, all_files(catalog.files.size()));
-    presize(payload, catalog, plan.split_files, threads);
+    std::vector<std::uint32_t> plain, segmented;
+    for (std::uint32_t f = 0; f < catalog.files.size(); ++f)
+        (catalog.segmented(catalog.files[f]) ? segmented : plain).push_back(f);
+    create_parents(payload, catalog, plain);
+    for (std::uint32_t f : segmented) fs::create_directories(native_path(segments, catalog.files[f].path));
     const std::uint64_t prepare_ns = now_ns() - phase;
 
-    // One pass per block: read source, hash, write destination.
+    // One pass per block: read source, hash, write destination. Every
+    // destination object (plain file or segment) is created by exactly one task.
     Flags failed = make_flags(catalog.files.size());
     auto buffers = worker_buffers(threads, catalog.block_size);
     const SchedulerStats copy = run_tasks(tasks, run.sched, [&](const Task& t, int worker) -> std::uint64_t {
@@ -235,7 +274,8 @@ BackupResult run_backup(const BackupOptions& options) {
         std::vector<char>& buffer = buffers[static_cast<std::size_t>(worker)];
         try {
             File in(native_path(options.source, c.path), File::Mode::Read);
-            File out(native_path(payload, c.path), t.whole_file ? File::Mode::WriteCreate : File::Mode::WriteExisting);
+            std::unique_ptr<File> out;
+            fs::path out_path;
             std::uint64_t bytes = 0;
             for (std::uint32_t b = t.first_block; b < t.first_block + t.block_count; ++b) {
                 const std::uint64_t length = block_length(c.size, catalog.block_size, b);
@@ -243,14 +283,22 @@ BackupResult run_backup(const BackupOptions& options) {
                 const std::size_t got = in.read_at(buffer.data(), static_cast<std::size_t>(length), offset);
                 if (got != length) throw std::runtime_error("source shrank during backup: " + c.path);
                 c.leaves[b] = leaf_hash(buffer.data(), got);
-                out.write_at(buffer.data(), got, offset);
+                std::uint64_t stored_offset = 0;
+                fs::path target = stored_path(options.backup, catalog, c, b, stored_offset);
+                if (!out || target != out_path) {
+                    if (out && options.sync) out->sync();
+                    out.reset(new File(target, File::Mode::WriteCreate));
+                    out_path = std::move(target);
+                }
+                out->write_at(buffer.data(), got, stored_offset);
                 bytes += got;
             }
             if (t.whole_file) {
                 char probe;
                 if (in.read_at(&probe, 1, c.size) != 0) throw std::runtime_error("source grew during backup: " + c.path);
-                out.set_mtime(c.mtime);
+                if (!catalog.segmented(c)) out->set_mtime(c.mtime);
             }
+            if (options.sync) out->sync();
             return bytes;
         } catch (...) {
             failed[t.file].store(1);
@@ -258,10 +306,8 @@ BackupResult run_backup(const BackupOptions& options) {
         }
     });
 
-    // Merkle roots, source-stability check, and timestamps for split files.
+    // Merkle roots and source-stability check.
     phase = now_ns();
-    std::vector<std::uint8_t> split(catalog.files.size(), 0);
-    for (std::uint32_t f : plan.split_files) split[f] = 1;
     std::atomic<std::uint64_t> changed(0);
     parallel_for(catalog.files.size(), threads, [&](std::size_t f, int) {
         if (failed[f].load()) return;
@@ -271,9 +317,7 @@ BackupResult run_backup(const BackupOptions& options) {
         if (now.kind != PathKind::File || now.size != c.size || now.mtime != c.mtime) {
             failed[f].store(1);
             changed.fetch_add(1);
-            return;
         }
-        if (split[f]) File(native_path(payload, c.path), File::Mode::WriteExisting).set_mtime(c.mtime);
     });
     BackupResult result;
     result.files = catalog.files.size();
@@ -294,6 +338,7 @@ BackupResult run_backup(const BackupOptions& options) {
         .field("bytes", result.bytes)
         .field("failed_files", result.failed_files)
         .field("changed_during_backup", changed.load())
+        .field("sync", options.sync)
         .field("block_size", catalog.block_size)
         .field("total_ns", total_ns)
         .field("discovery_ns", discovery.ns)
@@ -316,7 +361,7 @@ VerifyResult run_verify(const VerifyOptions& options) {
     const std::uint64_t start = now_ns();
     const Catalog catalog = load_catalog(catalog_path(options.backup));
     const std::uint64_t load_ns = now_ns() - start;
-    const Scan scan = scan_tree(payload_root(options.backup), catalog, all_files(catalog.files.size()),
+    const Scan scan = scan_tree(options.backup, true, catalog, all_files(catalog.files.size()),
                                 false, options.run);
     VerifyResult result;
     result.files = catalog.files.size();
@@ -368,7 +413,6 @@ RecoverResult run_recover(const RecoverOptions& options) {
     const int threads = run.threads();
     const std::uint64_t start = now_ns();
     const Catalog catalog = load_catalog(catalog_path(options.backup));
-    const fs::path payload = payload_root(options.backup);
     const std::size_t count = catalog.files.size();
     const std::uint64_t load_ns = now_ns() - start;
 
@@ -380,7 +424,7 @@ RecoverResult run_recover(const RecoverOptions& options) {
     if (options.mode == RecoveryMode::Full) {
         scan.state.assign(count, State::SizeChanged);
     } else {
-        scan = scan_tree(options.source, catalog, all_files(count), options.trust_mtime, run);
+        scan = scan_tree(options.source, false, catalog, all_files(count), options.trust_mtime, run);
     }
 
     // 2. Decide what to restore.
@@ -442,14 +486,14 @@ RecoverResult run_recover(const RecoverOptions& options) {
         const CatalogFile& c = catalog.files[t.file];
         std::vector<char>& buffer = buffers[static_cast<std::size_t>(worker)];
         try {
-            File in(native_path(payload, c.path), File::Mode::Read);
+            BlockSource in(options.backup, true, catalog, c);
             File out(native_path(options.source, c.path),
                      t.whole_file ? File::Mode::WriteCreate : File::Mode::WriteExisting);
             std::uint64_t bytes = 0;
             for (std::uint32_t b = t.first_block; b < t.first_block + t.block_count; ++b) {
                 const std::uint64_t length = block_length(c.size, catalog.block_size, b);
                 const std::uint64_t offset = static_cast<std::uint64_t>(b) * catalog.block_size;
-                const std::size_t got = in.read_at(buffer.data(), static_cast<std::size_t>(length), offset);
+                const std::size_t got = in.read(b, buffer.data());
                 if (got != length || leaf_hash(buffer.data(), got) != c.leaves[b])
                     throw std::runtime_error("backup copy is damaged: " + c.path);
                 out.write_at(buffer.data(), got, offset);
@@ -459,6 +503,7 @@ RecoverResult run_recover(const RecoverOptions& options) {
                 out.set_mtime(c.mtime);
                 timestamped[t.file].store(1);
             }
+            if (options.sync) out.sync();
             return bytes;
         } catch (...) {
             failed[t.file].store(1);
@@ -487,7 +532,7 @@ RecoverResult run_recover(const RecoverOptions& options) {
     std::uint64_t verify_ns = 0;
     if (options.post_verify && !touched.empty()) {
         phase = now_ns();
-        const Scan check = scan_tree(options.source, catalog, touched, false, run);
+        const Scan check = scan_tree(options.source, false, catalog, touched, false, run);
         for (std::uint32_t f : touched)
             if (check.state[f] != State::Ok) ++result.verify_bad;
         verify_ns = now_ns() - phase;
@@ -499,6 +544,7 @@ RecoverResult run_recover(const RecoverOptions& options) {
         .field("operation", "recover")
         .field("mode", recovery_mode_name(options.mode))
         .field("trust_mtime", options.trust_mtime)
+        .field("sync", options.sync)
         .field("catalog_files", count)
         .field("catalog_bytes", catalog_bytes)
         .field("missing", result.missing)

@@ -1,6 +1,7 @@
 #include "catalog.hpp"
 
 #include <algorithm>
+#include <cstdio>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -11,6 +12,18 @@ std::uint64_t Catalog::total_bytes() const {
     std::uint64_t total = 0;
     for (const CatalogFile& f : files) total += f.size;
     return total;
+}
+
+fs::path stored_path(const fs::path& backup, const Catalog& catalog, const CatalogFile& file,
+                     std::uint32_t block, std::uint64_t& offset) {
+    if (!catalog.segmented(file)) {
+        offset = static_cast<std::uint64_t>(block) * catalog.block_size;
+        return payload_root(backup) / fs::u8path(file.path);
+    }
+    offset = static_cast<std::uint64_t>(block % catalog.segment_blocks) * catalog.block_size;
+    char name[16];
+    std::snprintf(name, sizeof(name), "%06u", block / catalog.segment_blocks);
+    return segment_root(backup) / fs::u8path(file.path) / name;
 }
 
 bool is_safe_relative_path(const std::string& path) {
@@ -34,6 +47,7 @@ void save_catalog(const fs::path& path, const Catalog& catalog) {
         if (!out) throw std::runtime_error("cannot write catalog: " + temporary.u8string());
         out << "IPBRS-CATALOG 1\n"
             << "block_size " << catalog.block_size << "\n"
+            << "segment_blocks " << catalog.segment_blocks << "\n"
             << "files " << catalog.files.size() << "\n";
         std::string line;
         for (const CatalogFile& f : catalog.files) {
@@ -49,6 +63,7 @@ void save_catalog(const fs::path& path, const Catalog& catalog) {
         out.flush();
         if (!out) throw std::runtime_error("failed writing catalog: " + temporary.u8string());
     }
+    File(temporary, File::Mode::WriteExisting).sync();
     fs::rename(temporary, path);
 }
 
@@ -68,6 +83,12 @@ Catalog load_catalog(const fs::path& path) {
         std::istringstream fields(line);
         if (!(fields >> word >> catalog.block_size) || word != "block_size" || catalog.block_size == 0)
             throw fail("bad block_size");
+    }
+    if (!std::getline(in, line)) throw fail("missing segment_blocks");
+    {
+        std::istringstream fields(line);
+        if (!(fields >> word >> catalog.segment_blocks) || word != "segment_blocks" || catalog.segment_blocks == 0)
+            throw fail("bad segment_blocks");
     }
     if (!std::getline(in, line)) throw fail("missing file count");
     {

@@ -23,6 +23,7 @@ struct BackupOptions {
     fs::path source;
     fs::path backup; // must be new or empty; receives files/ and catalog.ipbrs
     std::uint32_t block_size = 1u << 20;
+    bool sync = true; // flush every stored object before committing the catalog
     RunConfig run;
 };
 
@@ -65,6 +66,7 @@ struct RecoverOptions {
     RecoveryMode mode = RecoveryMode::Block;
     bool trust_mtime = false; // skip hashing files whose size and mtime match
     bool post_verify = true;  // re-hash repaired files afterwards (timed separately)
+    bool sync = true;         // flush repaired files to stable storage
     RunConfig run;
 };
 

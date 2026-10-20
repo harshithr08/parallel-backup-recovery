@@ -79,6 +79,10 @@ void File::resize(std::uint64_t size) {
         throw io_error("resize", name_);
 }
 
+void File::sync() {
+    if (!FlushFileBuffers(handle_)) throw io_error("flush", name_);
+}
+
 // MSVC's file_time_type counts 100 ns ticks since 1601, exactly a FILETIME.
 void File::set_mtime(FileTime mtime) {
     FILETIME time;
@@ -118,6 +122,10 @@ std::runtime_error io_error(const char* what, const std::string& name) {
 
 void File::set_mtime(FileTime mtime) {
     fs::last_write_time(path_, from_ticks(mtime));
+}
+
+void File::sync() {
+    if (::fsync(fd_) != 0) throw io_error("flush", name_);
 }
 
 PathInfo stat_path(const fs::path& path) {

@@ -52,6 +52,7 @@ struct PlanConfig {
     std::uint32_t block_size = 1u << 20;
     std::uint64_t split_factor = 8;
     std::uint64_t per_task_cost = 64u * 1024; // fixed open/create overhead, in byte units
+    std::uint32_t align_blocks = 1; // pieces are whole multiples of this (backup segments)
 };
 
 struct PlanStats {
