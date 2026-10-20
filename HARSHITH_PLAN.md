@@ -50,7 +50,7 @@ Phase E - analysis
 - [x] E3 RESULTS.md
 
 Phase F - docs and cleanup
-- [ ] F1 README.md
-- [ ] F2 DESIGN.md
+- [x] F1 README.md
+- [x] F2 DESIGN.md
 - [ ] F3 remove legacy/ (with approval)
 - [ ] F4 final plan update
