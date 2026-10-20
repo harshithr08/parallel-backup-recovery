@@ -37,7 +37,7 @@ Phase C - benchmark tooling (bench/)
 - [x] C1 workloads.py (small-only, mixed, huge-files)
 - [x] C2 run_backup.py (scaling matrix, repeats, settle, CSV)
 - [x] C3 run_recovery.py (block/file/full at 5% and 20% damage)
-- [ ] C4 run_scan.py (serial vs parallel detection, trust-mtime vs full hash)
+- [x] C4 recover --dry-run (c459223) + run_scan.py (serial vs parallel detection, trust-mtime vs full hash)
 
 Phase D - experiments (raw results committed)
 - [ ] D1 backup scaling

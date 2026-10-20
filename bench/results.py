@@ -21,6 +21,13 @@ def append_run(path: Path, record: dict) -> None:
         out.write(json.dumps(record) + "\n")
 
 
+def dominant_scheduler(result: dict) -> dict | None:
+    """Scheduler stats of the phase that took longest (scan or copy/restore)."""
+    candidates = [result.get("scheduler"), result.get("scan", {}).get("scheduler")]
+    candidates = [s for s in candidates if s and s.get("wall_ns", 0) > 0]
+    return max(candidates, key=lambda s: s["wall_ns"]) if candidates else None
+
+
 def summarize(runs: list[dict], keys: tuple[str, ...], metric, baseline: dict | None = None,
               baseline_keys: tuple[str, ...] = ("workload",), extras: dict | None = None) -> list[dict]:
     """Groups runs by config keys and reports mean/stdev/min of metric(run) in seconds.
@@ -42,7 +49,7 @@ def summarize(runs: list[dict], keys: tuple[str, ...], metric, baseline: dict | 
             "stdev_s": statistics.stdev(values) if len(values) > 1 else 0.0,
             "min_s": min(values),
         })
-        sched = [run["result"].get("scheduler") or run["result"].get("scan", {}).get("scheduler") for run in members]
+        sched = [dominant_scheduler(run["result"]) for run in members]
         sched = [s for s in sched if s]
         if sched:
             row["load_imbalance"] = statistics.fmean(s["load_imbalance"] for s in sched)
