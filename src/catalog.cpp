@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <fstream>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 
@@ -40,7 +41,32 @@ bool is_safe_relative_path(const std::string& path) {
     return true;
 }
 
+namespace {
+
+// Paths must be unique, and no file may also be the parent directory of
+// another entry ("a" and "a/b"). Returns an empty string when consistent.
+std::string path_conflict(const std::vector<CatalogFile>& files) {
+    std::set<std::string> paths;
+    for (const CatalogFile& f : files)
+        if (!paths.insert(f.path).second) return "duplicate path " + f.path;
+    for (const CatalogFile& f : files) {
+        for (std::size_t slash = f.path.find('/'); slash != std::string::npos; slash = f.path.find('/', slash + 1))
+            if (paths.count(f.path.substr(0, slash))) return "file is also a directory: " + f.path.substr(0, slash);
+    }
+    return std::string();
+}
+
+void check_geometry(std::uint32_t block_size, std::uint32_t segment_blocks) {
+    if (block_size < 4096 || block_size > (64u << 20)) throw std::runtime_error("block_size must be 4 KiB - 64 MiB");
+    if (segment_blocks == 0 || segment_blocks > (1u << 20)) throw std::runtime_error("segment_blocks out of range");
+}
+
+} // namespace
+
 void save_catalog(const fs::path& path, const Catalog& catalog) {
+    check_geometry(catalog.block_size, catalog.segment_blocks);
+    const std::string conflict = path_conflict(catalog.files);
+    if (!conflict.empty()) throw std::runtime_error("inconsistent catalog: " + conflict);
     const fs::path temporary = path.u8string() + ".tmp";
     {
         std::ofstream out(temporary, std::ios::binary | std::ios::trunc);
@@ -87,8 +113,13 @@ Catalog load_catalog(const fs::path& path) {
     if (!std::getline(in, line)) throw fail("missing segment_blocks");
     {
         std::istringstream fields(line);
-        if (!(fields >> word >> catalog.segment_blocks) || word != "segment_blocks" || catalog.segment_blocks == 0)
+        if (!(fields >> word >> catalog.segment_blocks) || word != "segment_blocks")
             throw fail("bad segment_blocks");
+    }
+    try {
+        check_geometry(catalog.block_size, catalog.segment_blocks);
+    } catch (const std::exception& e) {
+        throw fail(e.what());
     }
     if (!std::getline(in, line)) throw fail("missing file count");
     {
@@ -96,10 +127,12 @@ Catalog load_catalog(const fs::path& path) {
         if (!(fields >> word >> count) || word != "files") throw fail("bad file count");
     }
 
-    catalog.files.resize(count);
+    // Grow as entries are read so a corrupt count cannot force a huge allocation.
+    catalog.files.reserve(std::min<std::size_t>(count, 1u << 16));
     for (std::size_t i = 0; i < count; ++i) {
-        CatalogFile& f = catalog.files[i];
-        if (!std::getline(in, line)) throw fail("truncated");
+        catalog.files.emplace_back();
+        CatalogFile& f = catalog.files.back();
+        if (!std::getline(in, line)) throw fail("truncated after " + std::to_string(i) + " entries");
         std::istringstream fields(line);
         std::size_t blocks = 0;
         std::string root;
@@ -116,6 +149,9 @@ Catalog load_catalog(const fs::path& path) {
             if (!parse_hex(line, b * 64, f.leaves[b])) throw fail("bad leaf hex for " + f.path);
         if (merkle_root(f.leaves) != f.root) throw fail("root does not match leaves for " + f.path);
     }
+    if (in.peek() != std::char_traits<char>::eof()) throw fail("unexpected data after the last entry");
+    const std::string conflict = path_conflict(catalog.files);
+    if (!conflict.empty()) throw fail(conflict);
     return catalog;
 }
 
