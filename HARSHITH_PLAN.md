@@ -46,7 +46,7 @@ Phase D - experiments (raw results committed)
 
 Phase E - analysis
 - [x] E1 plot.py speedup/efficiency
-- [ ] E2 imbalance/idle/bytes-avoided charts
+- [x] E2 imbalance/idle/bytes-avoided charts
 - [ ] E3 RESULTS.md
 
 Phase F - docs and cleanup
