@@ -91,6 +91,7 @@ TEST(steal_rebalances_when_estimates_are_wrong) {
         tasks[i].file = static_cast<std::uint32_t>(i);
         tasks[i].cost = 100;
     }
+    std::uint64_t walls[2] = {0, 0};
     for (Policy policy : {Policy::Static, Policy::Steal}) {
         SchedulerConfig config;
         config.policy = policy;
@@ -105,7 +106,46 @@ TEST(steal_rebalances_when_estimates_are_wrong) {
         } else {
             CHECK(stats.steals() > 0);
             CHECK(stats.workers[0].tasks < 50u); // most of its queue was taken by others
+            CHECK(stats.tasks_stolen() >= stats.steals());
+            std::uint64_t cost_stolen = 0;
+            for (const WorkerStats& w : stats.workers) {
+                CHECK(w.steals <= w.steal_attempts);
+                cost_stolen += w.cost_stolen;
+            }
+            CHECK_EQ(cost_stolen, stats.tasks_stolen() * 100u); // every task costs 100
         }
+        // Without stealing the fast workers finish long before worker 0.
+        if (policy == Policy::Static) CHECK(stats.finish_spread() > 0.5);
+        walls[policy == Policy::Static ? 0 : 1] = stats.wall_ns;
+    }
+    // Static waits for worker 0's 100 slow tasks; stealing leaves it only a few.
+    CHECK(walls[1] * 4 < walls[0]);
+}
+
+TEST(scheduler_statistics_are_consistent) {
+    const std::vector<Task> tasks = random_tasks(800, 8);
+    for (Policy policy : kPolicies) {
+        SchedulerConfig config;
+        config.policy = policy;
+        config.threads = 4;
+        const SchedulerStats stats = run_tasks(tasks, config, [](const Task& t, int) -> std::uint64_t {
+            volatile std::uint64_t spin = 0;
+            for (std::uint64_t i = 0; i < t.cost % 5000; ++i) spin += i; // a little real work
+            return t.cost;
+        });
+        CHECK(stats.wall_ns > 0);
+        for (const WorkerStats& w : stats.workers) {
+            CHECK(w.finish_ns > 0 && w.finish_ns <= stats.wall_ns);
+            CHECK(w.busy_ns <= stats.wall_ns);
+        }
+        CHECK(stats.idle_fraction() >= 0.0 && stats.idle_fraction() <= 1.0);
+        CHECK(stats.overhead_fraction() >= 0.0 && stats.overhead_fraction() < 1.0);
+        CHECK(stats.finish_spread() >= 0.0 && stats.finish_spread() <= 1.0);
+        CHECK(stats.load_imbalance() >= 0.0);
+        Json json;
+        stats.write_json(json);
+        CHECK(json.str().find("\"finish_spread\"") != std::string::npos);
+        CHECK(json.str().find("\"idle_ns\"") != std::string::npos);
     }
 }
 

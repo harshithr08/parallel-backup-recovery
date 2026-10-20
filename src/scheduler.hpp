@@ -43,13 +43,16 @@ struct SchedulerConfig {
 };
 
 struct WorkerStats {
-    std::uint64_t busy_ns = 0;
-    std::uint64_t claim_ns = 0;
+    std::uint64_t busy_ns = 0;        // inside task callbacks
+    std::uint64_t claim_ns = 0;       // taking local work or stealing
+    std::uint64_t finish_ns = 0;      // when the worker ran out of work, from run start
     std::uint64_t tasks = 0;
     std::uint64_t bytes = 0;
     std::uint64_t cost = 0;
-    std::uint64_t steal_attempts = 0;
-    std::uint64_t steals = 0;
+    std::uint64_t steal_attempts = 0; // victim scans, including unsuccessful ones
+    std::uint64_t steals = 0;         // successful steals
+    std::uint64_t tasks_stolen = 0;
+    std::uint64_t cost_stolen = 0;
 };
 
 struct SchedulerStats {
@@ -65,8 +68,13 @@ struct SchedulerStats {
     double load_imbalance() const;
     // 1 - total busy time / (workers * wall time).
     double idle_fraction() const;
+    // (plan + total claim time) / (workers * wall time).
+    double overhead_fraction() const;
+    // (latest - earliest worker finish) / wall: the tail where some workers idle.
+    double finish_spread() const;
     std::uint64_t claim_ns() const;
     std::uint64_t steals() const;
+    std::uint64_t tasks_stolen() const;
     void write_json(Json& json) const;
 };
 

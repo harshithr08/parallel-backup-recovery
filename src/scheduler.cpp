@@ -75,6 +75,28 @@ double SchedulerStats::idle_fraction() const {
     return std::max(0.0, 1.0 - static_cast<double>(total) / capacity);
 }
 
+double SchedulerStats::overhead_fraction() const {
+    if (workers.empty() || wall_ns == 0) return 0.0;
+    const double capacity = static_cast<double>(wall_ns) * static_cast<double>(workers.size());
+    return static_cast<double>(plan_ns + claim_ns()) / capacity;
+}
+
+double SchedulerStats::finish_spread() const {
+    if (workers.empty() || wall_ns == 0) return 0.0;
+    std::uint64_t first = UINT64_MAX, last = 0;
+    for (const WorkerStats& w : workers) {
+        first = std::min(first, w.finish_ns);
+        last = std::max(last, w.finish_ns);
+    }
+    return static_cast<double>(last - first) / static_cast<double>(wall_ns);
+}
+
+std::uint64_t SchedulerStats::tasks_stolen() const {
+    std::uint64_t total = 0;
+    for (const WorkerStats& w : workers) total += w.tasks_stolen;
+    return total;
+}
+
 std::uint64_t SchedulerStats::claim_ns() const {
     std::uint64_t total = 0;
     for (const WorkerStats& w : workers) total += w.claim_ns;
@@ -97,17 +119,24 @@ void SchedulerStats::write_json(Json& json) const {
         .field("failed_tasks", failed_tasks)
         .field("load_imbalance", load_imbalance())
         .field("idle_fraction", idle_fraction())
-        .field("steals", steals());
+        .field("overhead_fraction", overhead_fraction())
+        .field("finish_spread", finish_spread())
+        .field("steals", steals())
+        .field("tasks_stolen", tasks_stolen());
     json.key("workers").begin_array();
     for (const WorkerStats& w : workers) {
         json.begin_object()
             .field("busy_ns", w.busy_ns)
+            .field("idle_ns", wall_ns > w.busy_ns ? wall_ns - w.busy_ns : 0)
             .field("claim_ns", w.claim_ns)
+            .field("finish_ns", w.finish_ns)
             .field("tasks", w.tasks)
             .field("bytes", w.bytes)
             .field("cost", w.cost)
             .field("steal_attempts", w.steal_attempts)
             .field("steals", w.steals)
+            .field("tasks_stolen", w.tasks_stolen)
+            .field("cost_stolen", w.cost_stolen)
             .end_object();
     }
     json.end_array();
@@ -171,9 +200,11 @@ SchedulerStats run_tasks(const std::vector<Task>& tasks, const SchedulerConfig& 
     };
 
     const std::uint64_t start = now_ns();
+    auto finished = [&](int worker) { stats.workers[static_cast<std::size_t>(worker)].finish_ns = now_ns() - start; };
     switch (config.policy) {
     case Policy::Sequential:
         for (std::size_t i = 0; i < tasks.size(); ++i) execute(static_cast<std::uint32_t>(i), 0);
+        finished(0);
         break;
 
     case Policy::Static: {
@@ -182,6 +213,7 @@ SchedulerStats run_tasks(const std::vector<Task>& tasks, const SchedulerConfig& 
         stats.plan_ns = now_ns() - plan_start;
         parallel_region(threads, [&](int worker) {
             for (std::uint32_t index : parts[static_cast<std::size_t>(worker)]) execute(index, worker);
+            finished(worker);
         });
         break;
     }
@@ -199,6 +231,7 @@ SchedulerStats run_tasks(const std::vector<Task>& tasks, const SchedulerConfig& 
                 const std::size_t end = std::min(total, begin + config.chunk);
                 for (std::size_t i = begin; i < end; ++i) execute(static_cast<std::uint32_t>(i), worker);
             }
+            finished(worker);
         });
         break;
     }
@@ -252,6 +285,8 @@ SchedulerStats run_tasks(const std::vector<Task>& tasks, const SchedulerConfig& 
                 own.head = 0;
                 own.remaining.store(got);
                 ++w.steals;
+                w.tasks_stolen += own.items.size();
+                w.cost_stolen += got;
                 return true;
             }
         };
@@ -280,6 +315,7 @@ SchedulerStats run_tasks(const std::vector<Task>& tasks, const SchedulerConfig& 
                 w.claim_ns += now_ns() - claim_start;
                 execute(index, worker);
             }
+            finished(worker);
         });
         break;
     }
