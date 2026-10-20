@@ -21,11 +21,13 @@ def append_run(path: Path, record: dict) -> None:
         out.write(json.dumps(record) + "\n")
 
 
-def summarize(runs: list[dict], keys: tuple[str, ...], metric, baseline: dict | None = None) -> list[dict]:
+def summarize(runs: list[dict], keys: tuple[str, ...], metric, baseline: dict | None = None,
+              baseline_keys: tuple[str, ...] = ("workload",), extras: dict | None = None) -> list[dict]:
     """Groups runs by config keys and reports mean/stdev/min of metric(run) in seconds.
 
-    baseline maps a grouping (all keys except policy/threads/split/mode) to the
-    sequential mean, giving speedup and parallel efficiency.
+    baseline maps a tuple of baseline_keys values to the sequential mean time,
+    giving speedup and parallel efficiency. extras maps a column name to a
+    function of one run whose mean is reported.
     """
     groups: dict[tuple, list[dict]] = defaultdict(list)
     for run in runs:
@@ -48,8 +50,10 @@ def summarize(runs: list[dict], keys: tuple[str, ...], metric, baseline: dict | 
             row["finish_spread"] = statistics.fmean(s["finish_spread"] for s in sched)
             row["overhead_fraction"] = statistics.fmean(s["overhead_fraction"] for s in sched)
             row["steals"] = statistics.fmean(s["steals"] for s in sched)
+        for name, extra in (extras or {}).items():
+            row[name] = statistics.fmean(extra(run) for run in members)
         if baseline is not None:
-            base = baseline.get(row.get("workload"))
+            base = baseline.get(tuple(row[k] for k in baseline_keys))
             if base:
                 row["speedup"] = base / row["mean_s"]
                 row["efficiency"] = row["speedup"] / row["threads"]

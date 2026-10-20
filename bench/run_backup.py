@@ -104,7 +104,7 @@ def main() -> None:
     runs = [r for r in load_runs(args.out) if "result" in r]
     seq = {}
     for row in summarize([r for r in runs if r["config"]["policy"] == "seq"], KEYS, lambda r: r["result"]["total_ns"] / 1e9):
-        seq[row["workload"]] = row["mean_s"]
+        seq[(row["workload"],)] = row["mean_s"]
     rows = summarize(runs, KEYS, lambda r: r["result"]["total_ns"] / 1e9, baseline=seq)
     summary = args.out.with_name(args.out.stem + "_summary.csv")
     write_csv(summary, rows)
