@@ -1,24 +1,25 @@
-# IPBRS completion plan (harshith-dev)
+# IPBRS completion plan (harshith-dev) - COMPLETE
 
 Contribution: hybrid file/block work-stealing scheduler with a Merkle (per-block SHA-256) catalog.
 File-level scheduling cannot finish faster than its largest file; splitting large files into
 stealable block tasks removes that bound. The same tree enables parallel damage detection and
 block-level selective recovery.
 
-## Findings so far (Ryzen 7 7435HS 8C/16T, 16 GB, WD SN740 NVMe, C: 94% full)
-Workload: 4,000 x 8-16 KiB + 4 x 400 MiB, warm cache.
-- Read+hash (verify/scan): file-level stalls at ~1.7 s from 4 threads (72% idle at 16);
-  block split 0.78-0.86 s at 16 threads = 2.2x over file-level, 7.8x over 1 thread.
-- Backup is SSD-write-bound (~270 MB/s): ~2x speedup max. Concurrent writes into one
-  file were slow on NTFS -> backup stores files > 16 blocks as segment objects; with
-  segments, split and file-level backup are about equal in time, and imbalance drops 0.42 -> 0.
-- Backup/recovery flush (fsync) every stored object; --no-sync for comparison.
-- Always build from PowerShell: `cmd /c "<repo>\build.bat"`; check for "Built".
+## Final state
+- Repositories: team repo `sadm888/Parallel-Backup-and-Recovery-System` (branch `harshith-dev`)
+  and own repo `harshithr08/parallel-backup-recovery` (branch `main`); push to both.
+- Results: 873 runs, all verified; see RESULTS.md. Headline (huge workload, 16 threads, best of 3):
+  verify 6.9x vs 3.6x file-level, idle 72% -> 2%, block recovery 1.01 s vs 1.89 s and 0.15% of
+  data rewritten, durable backup 2-4x (SSD-bound).
+- Docs: README.md, DESIGN.md, RESULTS.md, docs/study-guide/ (6 chapters, 52 interview questions).
+- Demo: `powershell -ExecutionPolicy Bypass -File demo.ps1 -Pause`.
+- Slides: claude.ai artifact deck (13 slides, speaker notes), downloadable as PPTX/PDF.
+- Build from PowerShell: `cmd /c "<repo>\build.bat" test`; check for "Built" and "100% tests passed".
 
-## Commit plan (one focused commit per step; report after each)
-Done:
-- [x] Rewrite engine (198fb6f)
-- [x] Segment layout + durable writes (6140f80)
+## Commit plan (one focused commit per step)
+Engine
+- [x] Rewrite engine (79128f5)
+- [x] Segment layout + durable writes (1ffff96)
 
 Phase A - tests
 - [x] A1 test harness + ctest via `build.bat test`
@@ -37,7 +38,7 @@ Phase C - benchmark tooling (bench/)
 - [x] C1 workloads.py (small-only, mixed, huge-files)
 - [x] C2 run_backup.py (scaling matrix, repeats, settle, CSV)
 - [x] C3 run_recovery.py (block/file/full at 5% and 20% damage)
-- [x] C4 recover --dry-run (c459223) + run_scan.py (serial vs parallel detection, trust-mtime vs full hash)
+- [x] C4 recover --dry-run + run_scan.py (parallel detection, trust-mtime vs full hash)
 
 Phase D - experiments (raw results committed)
 - [x] D1 backup scaling (279 runs, all verified; drive's intermittent slow mode makes identical runs up to 4x slower)
@@ -49,8 +50,18 @@ Phase E - analysis
 - [x] E2 imbalance/idle/bytes-avoided charts
 - [x] E3 RESULTS.md
 
+Phase G - presentation
+- [x] G1 demo.ps1 live demo
+- [x] G2 slide deck
+- [x] Study guide (replaces the separate Q&A sheet)
+
 Phase F - docs and cleanup
-- [x] F1 README.md
+- [x] F1 README.md (with credits)
 - [x] F2 DESIGN.md
-- [ ] F3 remove legacy/ (with approval)
-- [ ] F4 final plan update
+- [x] F3 legacy/ kept: it is the team's first prototype, referenced in the credits
+- [x] F4 final plan update
+
+## Possible future work
+- Tune split factor, block size and per-task cost experimentally.
+- Hardware SHA-256 (SHA-NI); other storage (HDD, network); incremental backups; binary catalog.
+- Rerun write-heavy benchmarks on an emptier disk with Defender exclusions.
