@@ -23,7 +23,7 @@ Done:
 Phase A - tests
 - [x] A1 test harness + ctest via `build.bat test`
 - [x] A2 SHA-256 NIST vectors
-- [ ] A3 Merkle tree + catalog root checks
+- [x] A3 Merkle tree + catalog root checks
 - [ ] A4 scheduler exactly-once, all policies x 1/2/3/8/16 threads, failure accounting
 - [ ] A5 end-to-end backup -> 4 damage types -> block/file/full recovery -> byte compare
 
