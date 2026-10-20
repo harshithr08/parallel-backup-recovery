@@ -25,7 +25,7 @@ Phase A - tests
 - [x] A2 SHA-256 NIST vectors
 - [x] A3 Merkle tree + catalog root checks
 - [x] A4 scheduler exactly-once, all policies x 1/2/3/8/16 threads, failure accounting
-- [ ] A5 end-to-end backup -> 4 damage types -> block/file/full recovery -> byte compare
+- [x] A5 end-to-end backup -> 4 damage types -> block/file/full recovery -> byte compare
 
 Phase B - fixes from testing/review
 - [ ] B1 planner edge cases (zero-byte, single block, segment alignment) + tests
